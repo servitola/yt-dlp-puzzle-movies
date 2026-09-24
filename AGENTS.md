@@ -90,13 +90,14 @@ gets on `brew update`. Show the owner the dry run and get an explicit yes first.
 2. `make release-plan` is `scripts/release.sh --dry-run`. It runs the preflight and
    prints the version and the notes (commit subjects since the last tag), then stops.
 3. `make release` runs the whole release. The version defaults to today in Cyprus,
-   `YYYY.MM.DD`, and a second release on the same day gets `.1`, `.2`, and so on.
-   To force a version: `scripts/release.sh <version>`.
+   `YYYY.MM.DD`, with a `.1`, `.2`, … suffix until it is above the highest tag ever made.
+   Homebrew only upgrades upwards, and a reused name may sit in someone's download cache
+   with another sha256. To force a version: `scripts/release.sh <version>`.
 
 The script refuses to start on:
 - a dirty tree, a branch other than `main`, or `main` not pushed or not yet mirrored;
 - CI not green on the commit;
-- a taken tag;
+- a version that is not above the highest tag;
 - local edits to the formula in the tap checkout, or the tap checkout behind its origin.
 
 Then it:

@@ -38,15 +38,20 @@ wait_ci() {  # <repo> <workflow> <sha>
 
 step "preflight"
 git -C "$repo" fetch -q --tags origin
+last=$(git -C "$repo" tag --list 'v*' | sort -V | tail -1)
+# Homebrew only upgrades to a higher version, and a name that was ever published may sit in
+# someone's download cache with another sha256, so a new version must be above the last tag.
+newer() { [[ -z $last || $1 != "${last#v}" && $(printf '%s\n' "${last#v}" "$1" | sort -V | tail -1) == "$1" ]] }
 if (( $# )); then
   version=$1
 else
   version=$(TZ=Asia/Nicosia date +%Y.%m.%d)
   base=$version n=0
-  while git -C "$repo" rev-parse -q --verify "refs/tags/v$version" >/dev/null; do version=$base.$(( ++n )); done
+  until newer "$version"; do version=$base.$(( ++n )); done
 fi
 re='^[0-9]{4}\.[0-9]{2}\.[0-9]{2}(\.[0-9]+)?$'
 [[ $version =~ $re ]] || die "version must be YYYY.MM.DD or YYYY.MM.DD.N, got $version"
+newer "$version" || die "version $version is not above the last tag $last"
 tag=v$version
 git -C "$repo" rev-parse -q --verify "refs/tags/$tag" >/dev/null && die "tag $tag already exists"
 [[ -z $(git -C "$repo" status --porcelain) ]] || die "uncommitted changes in $repo"
@@ -61,10 +66,10 @@ git -C "$tap" diff --quiet -- "$formula" && git -C "$tap" diff --cached --quiet 
 git -C "$tap" fetch -q origin
 [[ $(git -C "$tap" rev-parse HEAD) == $(git -C "$tap" rev-parse origin/main) ]] || die "$tap main differs from origin/main"
 
-last=$(git -C "$repo" describe --tags --abbrev=0 2>/dev/null || true)
-notes=$(git -C "$repo" log --format='- %s' ${last:+$last..}HEAD)
+since=$(git -C "$repo" describe --tags --abbrev=0 2>/dev/null || true)
+notes=$(git -C "$repo" log --format='- %s' ${since:+$since..}HEAD)
 print "version: $version (tag $tag on $head)"
-print "since ${last:-the first commit}:\n$notes"
+print "since ${since:-the first commit}:\n$notes"
 (( dry )) && { print "dry run: nothing tagged, released or pushed"; exit 0 }
 
 step "tag $tag"
