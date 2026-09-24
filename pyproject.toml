@@ -1,0 +1,19 @@
+# Tool settings only: the plugin ships as a Homebrew formula, not a Python package.
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+# The formatter owns line length; what it leaves long is HTML fixture data inside strings.
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-third-party = ["yt_dlp"]
+known-first-party = ["yt_dlp_plugins"]
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

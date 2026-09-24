@@ -1,8 +1,8 @@
 from unittest import mock
 
 import pytest
-
 from yt_dlp.utils import ExtractorError
+
 from yt_dlp_plugins.extractor.puzzlemovies import (
     PuzzleMoviesIE,
     build_manifest_url,
@@ -13,7 +13,7 @@ from yt_dlp_plugins.extractor.puzzlemovies import (
     select_episodes,
 )
 
-SAMPLE_WEBPAGE = '''
+SAMPLE_WEBPAGE = """
 <html><body>
 <script type="text/javascript">
   var episodes = [{"season":1,"episodes":[
@@ -24,10 +24,10 @@ SAMPLE_WEBPAGE = '''
   ]}];
 </script>
 </body></html>
-'''
+"""
 
 
-SAMPLE_FILM_WEBPAGE = '''
+SAMPLE_FILM_WEBPAGE = """
 <html><head>
 <script type="application/ld+json">{"@type":"Movie","name":"Only the Brave","duration":"PT134M"}</script>
 </head><body>
@@ -39,13 +39,12 @@ SAMPLE_FILM_WEBPAGE = '''
   var movieTitle = "Only the Brave";
 </script>
 </body></html>
-'''
+"""
 
 
 def test_build_manifest_url():
     assert build_manifest_url('the-mentalist', 1, 2) == (
-        'https://cdn3.puzzle-movies.com/1568697914/series/video/'
-        'the-mentalist/s1e2/video_hd.mp4/master.m3u8'
+        'https://cdn3.puzzle-movies.com/1568697914/series/video/the-mentalist/s1e2/video_hd.mp4/master.m3u8'
     )
 
 
@@ -95,15 +94,13 @@ def test_valid_url_series():
 
 
 def test_valid_url_season():
-    m = PuzzleMoviesIE._match_valid_url(
-        'https://puzzle-movies.com/the-mentalist#the-mentalist-s1')
+    m = PuzzleMoviesIE._match_valid_url('https://puzzle-movies.com/the-mentalist#the-mentalist-s1')
     assert m.group('season') == '1'
     assert m.group('episode') is None
 
 
 def test_valid_url_episode():
-    m = PuzzleMoviesIE._match_valid_url(
-        'https://puzzle-movies.com/the-mentalist#the-mentalist-s1e2')
+    m = PuzzleMoviesIE._match_valid_url('https://puzzle-movies.com/the-mentalist#the-mentalist-s1e2')
     assert m.group('season') == '1'
     assert m.group('episode') == '2'
 
@@ -114,8 +111,7 @@ def test_valid_url_rejects_other_domain():
 
 def test_build_movie_manifest_url():
     assert build_movie_manifest_url('only-the-brave-2017') == (
-        'https://cdn3.puzzle-movies.com/1568697914/movies/'
-        'only-the-brave-2017/video_hd.mp4/master.m3u8'
+        'https://cdn3.puzzle-movies.com/1568697914/movies/only-the-brave-2017/video_hd.mp4/master.m3u8'
     )
 
 
@@ -139,23 +135,28 @@ def test_extract_movie_meta_missing_id_raises():
 
 
 def test_valid_url_film():
-    m = PuzzleMoviesIE._match_valid_url(
-        'https://puzzle-movies.com/films/only-the-brave-2017')
+    m = PuzzleMoviesIE._match_valid_url('https://puzzle-movies.com/films/only-the-brave-2017')
     assert m.group('kind') == 'films'
     assert m.group('slug') == 'only-the-brave-2017'
 
 
 def test_real_extract_film():
     ie = PuzzleMoviesIE()
-    with mock.patch.object(PuzzleMoviesIE, '_download_webpage', return_value=SAMPLE_FILM_WEBPAGE) as mock_page, \
-         mock.patch.object(PuzzleMoviesIE, '_extract_m3u8_formats', return_value=[{'format_id': 'hls-0'}]) as mock_formats:
+    with (
+        mock.patch.object(PuzzleMoviesIE, '_download_webpage', return_value=SAMPLE_FILM_WEBPAGE) as mock_page,
+        mock.patch.object(
+            PuzzleMoviesIE, '_extract_m3u8_formats', return_value=[{'format_id': 'hls-0'}]
+        ) as mock_formats,
+    ):
         info = ie._real_extract('https://puzzle-movies.com/films/only-the-brave-2017')
 
-    mock_page.assert_called_once_with(
-        'https://puzzle-movies.com/films/only-the-brave-2017', 'only-the-brave-2017')
+    mock_page.assert_called_once_with('https://puzzle-movies.com/films/only-the-brave-2017', 'only-the-brave-2017')
     mock_formats.assert_called_once_with(
-        build_movie_manifest_url('only-the-brave-2017'), '3071', 'mp4',
-        headers={'Referer': 'https://puzzle-movies.com/'})
+        build_movie_manifest_url('only-the-brave-2017'),
+        '3071',
+        'mp4',
+        headers={'Referer': 'https://puzzle-movies.com/'},
+    )
 
     assert info['id'] == '3071'
     assert info['title'] == 'Only the Brave'
@@ -166,13 +167,18 @@ def test_real_extract_film():
 
 def test_real_extract_single_episode():
     ie = PuzzleMoviesIE()
-    with mock.patch.object(PuzzleMoviesIE, '_download_webpage', return_value=SAMPLE_WEBPAGE), \
-         mock.patch.object(PuzzleMoviesIE, '_extract_m3u8_formats', return_value=[{'format_id': 'hls-0'}]) as mock_formats:
+    with (
+        mock.patch.object(PuzzleMoviesIE, '_download_webpage', return_value=SAMPLE_WEBPAGE),
+        mock.patch.object(
+            PuzzleMoviesIE, '_extract_m3u8_formats', return_value=[{'format_id': 'hls-0'}]
+        ) as mock_formats,
+    ):
         info = ie._real_extract('https://puzzle-movies.com/the-mentalist#the-mentalist-s1e2')
 
     expected_url = build_manifest_url('the-mentalist', 1, 2)
     mock_formats.assert_called_once_with(
-        expected_url, '30404', 'mp4', headers={'Referer': 'https://puzzle-movies.com/'})
+        expected_url, '30404', 'mp4', headers={'Referer': 'https://puzzle-movies.com/'}
+    )
 
     assert info['id'] == '30404'
     assert info['season_number'] == 1
@@ -184,8 +190,10 @@ def test_real_extract_single_episode():
 
 def test_real_extract_season_playlist():
     ie = PuzzleMoviesIE()
-    with mock.patch.object(PuzzleMoviesIE, '_download_webpage', return_value=SAMPLE_WEBPAGE), \
-         mock.patch.object(PuzzleMoviesIE, '_extract_m3u8_formats', return_value=[]):
+    with (
+        mock.patch.object(PuzzleMoviesIE, '_download_webpage', return_value=SAMPLE_WEBPAGE),
+        mock.patch.object(PuzzleMoviesIE, '_extract_m3u8_formats', return_value=[]),
+    ):
         result = ie._real_extract('https://puzzle-movies.com/the-mentalist#the-mentalist-s1')
 
     assert result['_type'] == 'playlist'
@@ -196,8 +204,10 @@ def test_real_extract_season_playlist():
 
 def test_real_extract_whole_series_playlist():
     ie = PuzzleMoviesIE()
-    with mock.patch.object(PuzzleMoviesIE, '_download_webpage', return_value=SAMPLE_WEBPAGE), \
-         mock.patch.object(PuzzleMoviesIE, '_extract_m3u8_formats', return_value=[]):
+    with (
+        mock.patch.object(PuzzleMoviesIE, '_download_webpage', return_value=SAMPLE_WEBPAGE),
+        mock.patch.object(PuzzleMoviesIE, '_extract_m3u8_formats', return_value=[]),
+    ):
         result = ie._real_extract('https://puzzle-movies.com/the-mentalist')
 
     entries = list(result['entries'])
@@ -206,6 +216,8 @@ def test_real_extract_whole_series_playlist():
 
 def test_real_extract_missing_episodes_json_raises():
     ie = PuzzleMoviesIE()
-    with mock.patch.object(PuzzleMoviesIE, '_download_webpage', return_value='<html>no data</html>'):
-        with pytest.raises(ExtractorError):
-            ie._real_extract('https://puzzle-movies.com/prices')
+    with (
+        mock.patch.object(PuzzleMoviesIE, '_download_webpage', return_value='<html>no data</html>'),
+        pytest.raises(ExtractorError),
+    ):
+        ie._real_extract('https://puzzle-movies.com/prices')

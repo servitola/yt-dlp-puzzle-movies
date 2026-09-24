@@ -17,10 +17,7 @@ def build_manifest_url(slug, season, episode):
 
 
 def build_movie_manifest_url(slug):
-    return (
-        f'https://cdn3.puzzle-movies.com/{_CDN_BUCKET_ID}/movies/'
-        f'{slug}/video_hd.mp4/master.m3u8'
-    )
+    return f'https://cdn3.puzzle-movies.com/{_CDN_BUCKET_ID}/movies/{slug}/video_hd.mp4/master.m3u8'
 
 
 def extract_media_type(webpage):
@@ -77,7 +74,7 @@ class PuzzleMoviesIE(InfoExtractor):
 
         # /films/<slug> and /<slug> are different records, not two routes to one
         # page: /films/the-mentalist is the movie, /the-mentalist the series.
-        path = f"{match.group('kind')}/{slug}" if match.group('kind') else slug
+        path = f'{match.group("kind")}/{slug}' if match.group('kind') else slug
         webpage = self._download_webpage(f'https://puzzle-movies.com/{path}', slug)
 
         if extract_media_type(webpage) == 'films':
@@ -92,7 +89,9 @@ class PuzzleMoviesIE(InfoExtractor):
         if not episodes:
             raise ExtractorError(
                 f'puzzlemovies: no matching episode(s) for season={season} episode={episode}',
-                video_id=slug, expected=True)
+                video_id=slug,
+                expected=True,
+            )
 
         if episode is not None:
             return self._episode_info(slug, episodes[0])
@@ -110,8 +109,8 @@ class PuzzleMoviesIE(InfoExtractor):
             raise ExtractorError(f'puzzlemovies: {e}', video_id=slug, expected=True) from e
 
         formats = self._extract_m3u8_formats(
-            build_movie_manifest_url(slug), meta['id'], 'mp4',
-            headers={'Referer': 'https://puzzle-movies.com/'})
+            build_movie_manifest_url(slug), meta['id'], 'mp4', headers={'Referer': 'https://puzzle-movies.com/'}
+        )
         return {
             'id': meta['id'],
             'title': meta['title'] or slug,
@@ -124,11 +123,11 @@ class PuzzleMoviesIE(InfoExtractor):
         season, episode = ep['season'], ep['episode']
         manifest_url = build_manifest_url(slug, season, episode)
         formats = self._extract_m3u8_formats(
-            manifest_url, str(ep['ID']), 'mp4',
-            headers={'Referer': 'https://puzzle-movies.com/'})
+            manifest_url, str(ep['ID']), 'mp4', headers={'Referer': 'https://puzzle-movies.com/'}
+        )
         return {
             'id': str(ep['ID']),
-            'title': f"{slug} S{season}E{episode} - {ep.get('title_en') or ep.get('post_name')}",
+            'title': f'{slug} S{season}E{episode} - {ep.get("title_en") or ep.get("post_name")}',
             'duration': ep.get('duration'),
             'formats': formats,
             'season_number': season,
