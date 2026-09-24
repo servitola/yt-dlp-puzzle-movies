@@ -1,7 +1,7 @@
 RUFF := uvx ruff@0.16.8
 URL ?= https://puzzle-movies.com/the-mentalist\#the-mentalist-s1e2
 
-.PHONY: test lint format live
+.PHONY: test lint format live release release-plan
 
 test:
 	uv run --no-project --with yt-dlp --with pytest pytest
@@ -18,3 +18,9 @@ format:
 # so point it at the parent. --no-plugin-dirs keeps an installed copy out of the run.
 live:
 	yt-dlp --no-plugin-dirs --plugin-dirs "$(CURDIR)/.." --simulate -v "$(URL)"
+
+release-plan:
+	scripts/release.sh --dry-run
+
+release:
+	scripts/release.sh
