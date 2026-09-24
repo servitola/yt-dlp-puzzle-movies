@@ -2,14 +2,22 @@
 
 Personal-use yt-dlp plugin for downloading from puzzle-movies.com (requires an active paid subscription to browse the catalog, but the plugin itself does not need cookies)
 
-**This is private. Do not publish or share this plugin.**
+**This is private. Do not publish or share this plugin.** The repository is
+private on GitHub; the formula in the public tap fetches the release through the
+GitHub API with the local `gh` login.
 
 ## Install
 
-Lives at `$DOTFILES/yt-dlp/plugins/puzzlemovies` and is symlinked to
-`~/.config/yt-dlp/plugins/puzzlemovies` by `install/07-config-links.sh` —
-already wired up as part of the normal dotfiles install (`up`). No manual
-step needed.
+    brew install servitola/tap/yt-dlp-puzzle-movies
+    mkdir -p ~/.config/yt-dlp/plugins
+    ln -sfn "$(brew --prefix)/opt/yt-dlp-puzzle-movies/libexec" ~/.config/yt-dlp/plugins/yt-dlp-puzzle-movies
+
+yt-dlp looks for plugins in `~/.config/yt-dlp/plugins`, `/etc/yt-dlp` and its
+own virtualenv, and a formula can write to none of them, hence the symlink. It
+goes through `opt`, so it survives upgrades of both this formula and yt-dlp.
+The dotfiles `install/07-config-links.sh` makes it on every `up`.
+
+`yt-dlp -v` prints `[debug] Extractor Plugins: PuzzleMoviesIE` once it is found.
 
 ## Usage
 
@@ -38,6 +46,13 @@ Films come in one quality only (720p HD); there is no `video_sd` sibling.
 ## Run tests
 
     uv run --with yt-dlp --with pytest python -m pytest tests/ -v
+
+## Release
+
+    ~/projects/homebrew-tap/bin/release-yt-dlp-puzzle-movies.sh <YYYY.MM.DD>
+
+Tags `main`, attaches a `git archive` tarball to a GitHub release and bumps
+`url`/`sha256` in the tap formula.
 
 ## Known limitations
 
