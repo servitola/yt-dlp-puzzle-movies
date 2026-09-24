@@ -10,15 +10,21 @@ the catalogue, but the plugin itself needs no cookies.
 
 ```bash
 brew install servitola/tap/yt-dlp-puzzle-movies
-mkdir -p ~/.config/yt-dlp/plugins
-ln -sfn "$(brew --prefix)/opt/yt-dlp-puzzle-movies/libexec" ~/.config/yt-dlp/plugins/yt-dlp-puzzle-movies
 ```
 
-The release comes from a private repository, so Homebrew reads it with your `gh` login
-(`gh auth login`) or with `HOMEBREW_GITHUB_API_TOKEN`. yt-dlp only looks for plugins
-in places a formula cannot write to, which is why the link is a separate step. The link
-points through `opt`, so upgrades don't break it. `yt-dlp -v` prints
-`Extractor Plugins: PuzzleMoviesIE` once the plugin is found.
+This also installs yt-dlp. The release comes from a private repository, so Homebrew
+reads it with your `gh` login (`gh auth login`) or with `HOMEBREW_GITHUB_API_TOKEN`.
+`yt-dlp -v` prints `Extractor Plugins: PuzzleMoviesIE` once the plugin is found.
+
+### Manual
+
+Use this with a yt-dlp that doesn't come from Homebrew:
+
+```bash
+gh repo clone servitola/yt-dlp-puzzle-movies ~/.config/yt-dlp/plugins/yt-dlp-puzzle-movies
+```
+
+To update, run `git pull` in that folder.
 
 ## Usage
 

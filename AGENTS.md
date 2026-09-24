@@ -59,3 +59,9 @@ attaches a `git archive` tarball to the GitHub release and
 bumps `url`/`sha256` in the formula. Tap CI can't reach a private release, so check a
 release locally: `brew upgrade servitola/tap/yt-dlp-puzzle-movies && brew test
 servitola/tap/yt-dlp-puzzle-movies`.
+
+The formula links `yt_dlp_plugins/` into `$(brew --prefix)/lib/pythonX.Y/site-packages`.
+Homebrew's yt-dlp virtualenv includes system site-packages, so the plugin is on its
+`sys.path` without any setup. X.Y is the `python@` that yt-dlp's formula depends on.
+When yt-dlp moves to a new Python, bump the formula's `revision` so it reinstalls under
+the new path; `brew test` fails until then.
