@@ -4,7 +4,7 @@ URL ?= https://puzzle-movies.com/the-mentalist\#the-mentalist-s1e2
 .PHONY: test lint format live
 
 test:
-	uv run --with yt-dlp --with pytest pytest
+	uv run --no-project --with yt-dlp --with pytest pytest
 
 lint:
 	$(RUFF) check .
