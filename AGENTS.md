@@ -113,13 +113,13 @@ Then it:
 
 ### When a release breaks half-way
 
-A tag that Homebrew users may already have fetched is never moved or deleted: the
-formula pins the tarball's sha256. Fix forward with the next version.
+A tag the formula ever pointed at is never moved or deleted: the formula pins the
+tarball's sha256. Fix forward with the next version.
 
 | Where it stopped | State | What to do |
 | --- | --- | --- |
 | Preflight | nothing published | Fix what it names, run again. |
-| Zip check or `gh release create` | tag pushed, no release | Fix on `main`, release the next version. The empty tag stays. |
+| Zip check or `gh release create` | tag pushed, no release, formula untouched | Nobody could have installed it, so delete it: `git tag -d <tag> && git push origin :refs/tags/<tag>`. Fix on `main`, release again. |
 | Tarball not served yet | tag and release exist, formula untouched | Wait a minute and finish by hand: rewrite `url`/`sha256` in the formula and do steps 5–6 above. |
 | Local audit, install or test | formula changed in the tap checkout, not pushed | Read the brew output. Fix the formula, or `git -C ~/projects/homebrew-tap checkout -- Formula/yt-dlp-puzzle-movies.rb` and release a fixed plugin. |
 | Tap CI red | users get a broken formula on `brew update` | `gh run view <id> -R servitola/homebrew-tap --log-failed`. Fix forward with a tap commit, or `git revert` the formula commit, with the owner's yes. |
