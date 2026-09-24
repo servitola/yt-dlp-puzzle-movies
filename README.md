@@ -18,10 +18,14 @@ This also installs yt-dlp.
 Use this with a yt-dlp that doesn't come from Homebrew:
 
 ```bash
-git clone https://github.com/servitola/yt-dlp-puzzle-movies ~/.config/yt-dlp/plugins/yt-dlp-puzzle-movies
+curl -L --create-dirs -o ~/.config/yt-dlp/plugins/yt-dlp-puzzle-movies.zip \
+  https://github.com/servitola/yt-dlp-puzzle-movies/releases/latest/download/yt-dlp-puzzle-movies.zip
 ```
 
-To update, run `git pull` in that folder.
+Or download `yt-dlp-puzzle-movies.zip` from
+[Releases](https://github.com/servitola/yt-dlp-puzzle-movies/releases) and put it
+into the yt-dlp plugins folder as is, without unpacking. On Windows that folder is
+`%APPDATA%\yt-dlp\plugins`. To update, replace the zip.
 
 ## Usage
 

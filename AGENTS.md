@@ -50,8 +50,10 @@ never what.
 To release, commit and push `main`, then run
 `~/projects/homebrew-tap/bin/release-yt-dlp-puzzle-movies.sh <version>`. The version
 is the date, `YYYY.MM.DD`, with a `.N` suffix for a second release on the same day. The
-script tags, creates the GitHub release and points the formula at
-the tag's source tarball. Tap CI then installs and tests the formula.
+script tags, creates the GitHub release and points the formula at the tag's source
+tarball. It also attaches `yt-dlp-puzzle-movies.zip`, which holds `yt_dlp_plugins/` at
+its root: yt-dlp loads that zip from its plugins folder as is. Tap CI then installs and
+tests the formula.
 
 The formula links `yt_dlp_plugins/` into `$(brew --prefix)/lib/pythonX.Y/site-packages`.
 Homebrew's yt-dlp virtualenv includes system site-packages, so the plugin is on its
