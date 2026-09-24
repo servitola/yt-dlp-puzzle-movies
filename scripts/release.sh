@@ -16,6 +16,14 @@ dry=0
 die() { echo "release: $*" >&2; exit 1 }
 step() { print -P "%B==> $*%b" }
 
+# yt-dlp -v without a URL exits 2 after printing its header, and under pipefail a pipe into
+# grep would report that 2 instead of whether the plugin was listed.
+loads_plugin() {  # [yt-dlp args...]
+  local out
+  out=$(yt-dlp "$@" -v 2>&1 || true)
+  [[ $out == *'Extractor Plugins: PuzzleMoviesIE'* ]]
+}
+
 # GitHub only ever receives what origin mirrors to it, a few seconds after the push.
 wait_github() {  # <repo> <ref> <sha>
   for _ in {1..24}; do
@@ -86,7 +94,7 @@ trap 'rm -rf "$work"' EXIT
 zip=$work/yt-dlp-puzzle-movies.zip
 git -C "$repo" archive --format=zip -o "$zip" "$tag" yt_dlp_plugins
 mkdir "$work/plugins" && cp "$zip" "$work/plugins/"
-yt-dlp --ignore-config --no-plugin-dirs --plugin-dirs "$work/plugins" -v 2>&1 | grep -q 'Extractor Plugins: PuzzleMoviesIE' ||
+loads_plugin --ignore-config --no-plugin-dirs --plugin-dirs "$work/plugins" ||
   die "yt-dlp does not load the release zip; $tag is pushed but not released"
 gh release create "$tag" -R "$gh_repo" --verify-tag --title "yt-dlp-puzzle-movies $version" --notes "$notes
 
@@ -125,5 +133,5 @@ wait_github servitola/homebrew-tap main "$tap_head"
 git -C "$clone" pull -q --ff-only
 wait_ci servitola/homebrew-tap tests.yml "$tap_head"
 
-yt-dlp -v 2>&1 | grep -q 'Extractor Plugins: PuzzleMoviesIE' || die "the installed yt-dlp does not load the plugin"
+loads_plugin || die "the installed yt-dlp does not load the plugin"
 print "released $version: https://github.com/$gh_repo/releases/tag/$tag"
