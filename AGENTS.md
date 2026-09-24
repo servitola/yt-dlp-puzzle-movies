@@ -4,12 +4,6 @@ A yt-dlp extractor plugin for puzzle-movies.com, shipped as the Homebrew formula
 `servitola/tap/yt-dlp-puzzle-movies`. `README.md` is for the person installing it and
 stays short. This file is for whoever changes the code.
 
-## Private
-
-The repository is private on GitHub, and the code must not end up anywhere public:
-no PyPI, no gists, no pasting into issues of other projects. The public tap carries
-only the formula, which fetches a release asset through the GitHub API with a token.
-
 ## Layout
 
 - `yt_dlp_plugins/extractor/puzzlemovies.py` is the whole plugin. yt-dlp imports
@@ -54,11 +48,10 @@ never what.
 ## Release
 
 To release, commit and push `main`, then run
-`~/projects/homebrew-tap/bin/release-yt-dlp-puzzle-movies.sh <YYYY.MM.DD>`. It tags,
-attaches a `git archive` tarball to the GitHub release and
-bumps `url`/`sha256` in the formula. Tap CI can't reach a private release, so check a
-release locally: `brew upgrade servitola/tap/yt-dlp-puzzle-movies && brew test
-servitola/tap/yt-dlp-puzzle-movies`.
+`~/projects/homebrew-tap/bin/release-yt-dlp-puzzle-movies.sh <version>`. The version
+is the date, `YYYY.MM.DD`, with a `.N` suffix for a second release on the same day. The
+script tags, creates the GitHub release and points the formula at
+the tag's source tarball. Tap CI then installs and tests the formula.
 
 The formula links `yt_dlp_plugins/` into `$(brew --prefix)/lib/pythonX.Y/site-packages`.
 Homebrew's yt-dlp virtualenv includes system site-packages, so the plugin is on its
