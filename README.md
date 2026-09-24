@@ -35,4 +35,4 @@ yt-dlp "https://puzzle-movies.com/films/only-the-brave-2017"          # a film
 Films come in 720p only. Subtitles are not supported: the site renders them with its
 own in-page widget, not as `.vtt` or `.srt` files.
 
-Public domain ([Unlicense](LICENSE)), same as yt-dlp.
+[MIT](LICENSE)
