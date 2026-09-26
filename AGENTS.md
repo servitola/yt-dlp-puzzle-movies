@@ -36,18 +36,23 @@ co-author and tool footers.
 ## How the site works (settled; re-verify before changing)
 
 - `/films/<slug>` and `/<slug>` are different records, not two routes to the same
-  page. `/films/the-mentalist` is a movie, and `/the-mentalist` is the series. The
-  extractor reads `var media_type` from the page before choosing a layout.
-- Series pages embed the episode list as `var episodes = [...]` JSON. Film pages
-  expose `movieID`, `movieTitle` and `posterUrl` as JS variables.
+  page. `/the-mentalist` is the series, and `/films/the-mentalist` is a separate film
+  record, an empty one: its manifest has answered 404 since at least 2026-09-25. For a
+  film that actually plays, use `/films/only-the-brave-2017`. The extractor reads
+  `var media_type` from the page before choosing a layout.
+- Series pages embed the episode list as `var episodes = [...]` JSON. A series comes
+  back as a playlist of episode URLs, and each episode's manifest is fetched only when
+  yt-dlp reaches it. Film pages expose `movieID`, `movieTitle` and `posterUrl` as JS
+  variables.
 - Manifests live on `cdn3.puzzle-movies.com` under one sitewide bucket id,
   `_CDN_BUCKET_ID`. It was checked on unrelated series and is not per-video:
   - series: `/<bucket>/series/video/<slug>/s<S>e<E>/video_hd.mp4/master.m3u8`
   - films: `/<bucket>/movies/<slug>/video_hd.mp4/master.m3u8`, 720p only, with no
     `video_sd` sibling.
 - No cookies are needed. The extractor sends `Referer: https://puzzle-movies.com/`
-  the way the site's own player does. On 2026-09-24 `master.m3u8` answered 200
-  without it too, but the segments were never tested without it, so keep sending it.
+  with the manifest and the segments, the way the site's own player does. Until
+  2026-09-26 the segments went out without it and still downloaded, so the CDN does
+  not require it yet. Keep sending it anyway.
 
 When downloads break, the site changed. `make live` shows which step fails: the page
 fetch, the `episodes` JSON, or the manifest URL. Fix the parser, update the fixtures in

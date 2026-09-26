@@ -78,7 +78,7 @@ class PuzzleMoviesIE(InfoExtractor):
         episode = int(match.group('episode')) if match.group('episode') else None
 
         # /films/<slug> and /<slug> are different records, not two routes to one
-        # page: /films/the-mentalist is the movie, /the-mentalist the series.
+        # page: /the-mentalist is the series, /films/the-mentalist a separate film record.
         path = f'{match.group("kind")}/{slug}' if match.group('kind') else slug
         webpage = self._download_webpage(f'https://puzzle-movies.com/{path}', slug)
 
