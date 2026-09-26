@@ -188,30 +188,36 @@ def test_real_extract_single_episode():
     assert info['formats'] == [{'format_id': 'hls-0'}]
 
 
-def test_real_extract_season_playlist():
+def test_real_extract_season_playlist_defers_manifests():
     ie = PuzzleMoviesIE()
     with (
         mock.patch.object(PuzzleMoviesIE, '_download_webpage', return_value=SAMPLE_WEBPAGE),
-        mock.patch.object(PuzzleMoviesIE, '_extract_m3u8_formats', return_value=[]),
+        mock.patch.object(PuzzleMoviesIE, '_extract_m3u8_formats') as mock_formats,
     ):
         result = ie._real_extract('https://puzzle-movies.com/the-mentalist#the-mentalist-s1')
 
+    mock_formats.assert_not_called()
     assert result['_type'] == 'playlist'
     entries = list(result['entries'])
-    assert len(entries) == 2
-    assert {e['episode_number'] for e in entries} == {1, 2}
+    assert [e['_type'] for e in entries] == ['url', 'url']
+    assert [e['url'] for e in entries] == [
+        'https://puzzle-movies.com/the-mentalist#the-mentalist-s1e1',
+        'https://puzzle-movies.com/the-mentalist#the-mentalist-s1e2',
+    ]
+    assert entries[1]['id'] == '30404'
+    assert entries[1]['title'] == 'the-mentalist S1E2 - Red Hair and Silver Tape'
+    assert entries[1]['episode_number'] == 2
+    assert all(PuzzleMoviesIE.suitable(e['url']) for e in entries)
 
 
 def test_real_extract_whole_series_playlist():
     ie = PuzzleMoviesIE()
-    with (
-        mock.patch.object(PuzzleMoviesIE, '_download_webpage', return_value=SAMPLE_WEBPAGE),
-        mock.patch.object(PuzzleMoviesIE, '_extract_m3u8_formats', return_value=[]),
-    ):
+    with mock.patch.object(PuzzleMoviesIE, '_download_webpage', return_value=SAMPLE_WEBPAGE):
         result = ie._real_extract('https://puzzle-movies.com/the-mentalist')
 
     entries = list(result['entries'])
     assert len(entries) == 3
+    assert entries[2]['url'] == 'https://puzzle-movies.com/the-mentalist#the-mentalist-s2e1'
 
 
 def test_real_extract_missing_episodes_json_raises():

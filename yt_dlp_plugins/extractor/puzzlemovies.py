@@ -59,6 +59,10 @@ def select_episodes(seasons, season=None, episode=None):
     return matched
 
 
+def episode_title(slug, ep):
+    return f'{slug} S{ep["season"]}E{ep["episode"]} - {ep.get("title_en") or ep.get("post_name")}'
+
+
 class PuzzleMoviesIE(InfoExtractor):
     IE_NAME = 'puzzlemovies'
     _VALID_URL = (
@@ -96,10 +100,25 @@ class PuzzleMoviesIE(InfoExtractor):
         if episode is not None:
             return self._episode_info(slug, episodes[0])
 
+        # URL entries, not resolved ones: each episode's manifest is fetched only when yt-dlp
+        # gets to it, so a long series starts at once, --flat-playlist lists without
+        # network, and an episode missing on the CDN fails alone instead of the playlist.
         return self.playlist_result(
-            [self._episode_info(slug, ep) for ep in episodes],
+            [self._episode_entry(slug, ep) for ep in episodes],
             playlist_id=slug,
             playlist_title=slug,
+        )
+
+    def _episode_entry(self, slug, ep):
+        season, episode = ep['season'], ep['episode']
+        return self.url_result(
+            f'https://puzzle-movies.com/{slug}#{slug}-s{season}e{episode}',
+            PuzzleMoviesIE,
+            str(ep['ID']),
+            episode_title(slug, ep),
+            duration=ep.get('duration'),
+            season_number=season,
+            episode_number=episode,
         )
 
     def _movie_info(self, slug, webpage):
@@ -127,7 +146,7 @@ class PuzzleMoviesIE(InfoExtractor):
         )
         return {
             'id': str(ep['ID']),
-            'title': f'{slug} S{season}E{episode} - {ep.get("title_en") or ep.get("post_name")}',
+            'title': episode_title(slug, ep),
             'duration': ep.get('duration'),
             'formats': formats,
             'season_number': season,
