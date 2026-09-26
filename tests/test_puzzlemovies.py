@@ -162,6 +162,7 @@ def test_real_extract_film():
     assert info['title'] == 'Only the Brave'
     assert info['duration'] == 8040
     assert info['formats'] == [{'format_id': 'hls-0'}]
+    assert info['http_headers'] == {'Referer': 'https://puzzle-movies.com/'}
     assert 'season_number' not in info
 
 
@@ -186,6 +187,7 @@ def test_real_extract_single_episode():
     assert info['duration'] == 2567
     assert info['title'] == 'the-mentalist S1E2 - Red Hair and Silver Tape'
     assert info['formats'] == [{'format_id': 'hls-0'}]
+    assert info['http_headers'] == {'Referer': 'https://puzzle-movies.com/'}
 
 
 def test_real_extract_season_playlist_defers_manifests():

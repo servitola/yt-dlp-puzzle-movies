@@ -7,6 +7,7 @@ from yt_dlp.utils import ExtractorError, parse_duration
 # Fixed sitewide CDN bucket id, verified empirically to be identical across
 # unrelated series (the-mentalist, friends, breaking-bad) — not per-video.
 _CDN_BUCKET_ID = '1568697914'
+_HEADERS = {'Referer': 'https://puzzle-movies.com/'}
 
 
 def build_manifest_url(slug, season, episode):
@@ -127,28 +128,26 @@ class PuzzleMoviesIE(InfoExtractor):
         except ValueError as e:
             raise ExtractorError(f'puzzlemovies: {e}', video_id=slug, expected=True) from e
 
-        formats = self._extract_m3u8_formats(
-            build_movie_manifest_url(slug), meta['id'], 'mp4', headers={'Referer': 'https://puzzle-movies.com/'}
-        )
+        formats = self._extract_m3u8_formats(build_movie_manifest_url(slug), meta['id'], 'mp4', headers=_HEADERS)
         return {
             'id': meta['id'],
             'title': meta['title'] or slug,
             'duration': meta['duration'],
             'thumbnail': meta['thumbnail'],
             'formats': formats,
+            'http_headers': _HEADERS,
         }
 
     def _episode_info(self, slug, ep):
         season, episode = ep['season'], ep['episode']
         manifest_url = build_manifest_url(slug, season, episode)
-        formats = self._extract_m3u8_formats(
-            manifest_url, str(ep['ID']), 'mp4', headers={'Referer': 'https://puzzle-movies.com/'}
-        )
+        formats = self._extract_m3u8_formats(manifest_url, str(ep['ID']), 'mp4', headers=_HEADERS)
         return {
             'id': str(ep['ID']),
             'title': episode_title(slug, ep),
             'duration': ep.get('duration'),
             'formats': formats,
+            'http_headers': _HEADERS,
             'season_number': season,
             'episode_number': episode,
         }
